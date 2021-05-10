@@ -16,6 +16,8 @@ def _avg_len_per_sentence(sentence_dict: dict):
     for k, v in sentence_dict.items():
         assert isinstance(v, list), 'not all values in the dictionary are lists'
         num_sentences += len(v)
+        if any(isinstance(sent, list) for sent in v):
+            v = [sent_string for sent_list in v for sent_string in sent_list]
         total_words = [w for sent in v for w in sent.split()]
         combined_sent_length += len(total_words)
     return combined_sent_length/num_sentences
@@ -32,7 +34,7 @@ def print_sentence_stats(sentence_dict: dict, msg='sentence stats'):
     print(f'Dictionary contains sentences for {len(sentence_dict)} compounds.')
     print(f'Each compound has an average of {_avg_sent_per_compound(sentence_dict)} sentences.')
     print(f'Sentence length micro average is {_avg_len_per_sentence(sentence_dict)} words per sentence.')
-    print(f'Number of compounds with no sentences: {_number_of_empty_sentence_lists(sentence_dict)}.')
+    print(f'Number of compounds with no sentences: {_number_of_empty_sentence_lists(sentence_dict)}.\n')
 
 def clean_sentences(sentence_dict: dict) -> dict:
     url_reg = re.compile(r'http\S+|\[\w*\]|[^\w\s!?:.,\-/]')
@@ -41,7 +43,7 @@ def clean_sentences(sentence_dict: dict) -> dict:
     for compound, sentences in sentence_dict.items():
         for s in sentences:
             new_s = re.sub(url_reg, '', s)
-            new_s = re.sub(space_reg, '', new_s)
+            new_s = re.sub(space_reg, ' ', new_s)
             cleaned_sentences[compound].append(new_s)
     return cleaned_sentences
 
@@ -65,9 +67,8 @@ def filter_sentences(sentence_dict: dict, desired_length: int, num_sentences: in
             if re.search(regex, s, re.IGNORECASE) is not None:
                 potential_sentences.append(s)
         potential_sentences = sorted(potential_sentences, key=lambda x: math.fabs(len(x.split())-desired_length))
-        filtered_sentences[compound].append(potential_sentences[:num_sentences])
-
-    return sentence_dict
+        filtered_sentences[compound] = potential_sentences[:num_sentences]
+    return filtered_sentences
 
 
 def main():
@@ -79,9 +80,12 @@ def main():
         print('Cannot open file')
 
     print_sentence_stats(harvested_sentences, msg='sentence stats before filtering')
-    filter_sentences(sentence_dict=harvested_sentences, desired_length=22, num_sentences=1)
-    print(len(harvested_sentences['creditor meeting']))
-    print(harvested_sentences['creditor meeting'])
+    cleaned_sents = clean_sentences(harvested_sentences)
+    avg_sent_length = _avg_len_per_sentence(sentence_dict=harvested_sentences)
+    filtered_sents = filter_sentences(sentence_dict=cleaned_sents, desired_length=int(avg_sent_length), num_sentences=1)
+    print_sentence_stats(filtered_sents, msg='sentence stats after cleaning + filtering')
+
+
 
 if __name__ == '__main__':
     main()
