@@ -2,6 +2,7 @@ import json, copy
 from collections import defaultdict
 import re
 import math
+from datetime import date
 
 def _avg_sent_per_compound(sentence_dict: dict):
     num_sentences = 0
@@ -85,7 +86,10 @@ def main():
     filtered_sents = filter_sentences(sentence_dict=cleaned_sents, desired_length=int(avg_sent_length), num_sentences=1)
     print_sentence_stats(filtered_sents, msg='sentence stats after cleaning + filtering')
 
+    date_today = date.today().strftime("%b-%d-%Y")
 
+    with open(f'compound_sents_filtered_{date_today}.json', 'w') as outfile:
+        json.dump(filtered_sents, outfile)
 
 if __name__ == '__main__':
     main()
