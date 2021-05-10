@@ -1,6 +1,6 @@
 import argparse
 import pandas as pd
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 import os
 
 def get_file_metadata(file_path, format='bert'):
@@ -20,6 +20,22 @@ def get_file_metadata(file_path, format='bert'):
         metadata_categories = ['dataset', 'model', 'split', 'grain', 'epochs', 'batch_size', 'max_len', 'dual_seq',
                                'emb_comp']
 
+def print_single_confusion_matrix(data: pd.DataFrame):
+    true = data.nc_type
+    pred = data.predicted_id
+    all_labels = pd.concat([true, pred], axis=0)
+    unique_labels = pd.unique(all_labels)
+    print(unique_labels)
+    print(confusion_matrix(y_true=true, y_pred=pred))
+
+def print_classification_report(data: pd.DataFrame):
+    true = data.nc_type
+    pred = data.predicted_id
+    all_labels = pd.concat([true, pred], axis=0)
+    unique_labels = pd.unique(all_labels)
+    print(unique_labels)
+    print(classification_report(true, pred, labels=unique_labels, zero_division=0))
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--preds_a', type=str, required=True, help='A file to evaluate')
@@ -29,13 +45,17 @@ def main():
     filename_a, filename_b = args.preds_a, args.preds_b
 
     assert(filename_a.endswith('.csv')), f'{filename_a} is not a csv file! Only csv files are accepted.'
-    assert (filename_b.endswith('.csv')), f'{filename_b} is not a csv file! Only csv files are accepted.'
+    assert(filename_b.endswith('.csv')), f'{filename_b} is not a csv file! Only csv files are accepted.'
 
-    file_a = pd.read_csv(filename_a)
-    file_b = pd.read_csv(filename_b)
+    data_a = pd.read_csv(filename_a)
+    data_b = pd.read_csv(filename_b)
+
+    print(data_b.predicted_id)
 
     metadata_a = get_file_metadata(filename_a)
     metadata_b = get_file_metadata(filename_b)
+
+    print_single_confusion_matrix(data_a)
 
     print(metadata_a)
     print(metadata_b)
