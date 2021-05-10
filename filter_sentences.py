@@ -35,8 +35,14 @@ def print_sentence_stats(sentence_dict: dict, msg='sentence stats'):
     print(f'Number of compounds with no sentences: {_number_of_empty_sentence_lists(sentence_dict)}.')
 
 def clean_sentences(sentence_dict: dict) -> dict:
+    url_reg = re.compile(r'http\S+|\[\w*\]|[^\w\s!?:.,\-/]')
+    space_reg = re.compile(r'\s+')
     cleaned_sentences = defaultdict(list)
-
+    for compound, sentences in sentence_dict.items():
+        for s in sentences:
+            new_s = re.sub(url_reg, '', s)
+            new_s = re.sub(space_reg, '', new_s)
+            cleaned_sentences[compound].append(new_s)
     return cleaned_sentences
 
 
@@ -53,7 +59,7 @@ def filter_sentences(sentence_dict: dict, desired_length: int, num_sentences: in
         if not sentences:
             print(f'No sentences listed for "{compound}".')
             continue
-        regex = f'{compound}\W'
+        regex = f'{compound}'
         potential_sentences = []
         for s in sentences:
             if re.search(regex, s, re.IGNORECASE) is not None:
@@ -65,7 +71,7 @@ def filter_sentences(sentence_dict: dict, desired_length: int, num_sentences: in
 
 
 def main():
-
+    # TODO bytte hvordan du åpner fila, må gjøres før du publiserer
     try:
         with open('/Users/ingalang/Documents/Malta/Semester2/Thesis/compound_sents_10mai_1233.json', 'r') as infile:
             harvested_sentences = json.load(infile)
@@ -74,6 +80,8 @@ def main():
 
     print_sentence_stats(harvested_sentences, msg='sentence stats before filtering')
     filter_sentences(sentence_dict=harvested_sentences, desired_length=22, num_sentences=1)
+    print(len(harvested_sentences['creditor meeting']))
+    print(harvested_sentences['creditor meeting'])
 
 if __name__ == '__main__':
     main()
