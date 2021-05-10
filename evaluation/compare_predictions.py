@@ -20,9 +20,6 @@ def get_file_metadata(file_path, format='bert'):
         metadata_categories = ['dataset', 'model', 'split', 'grain', 'epochs', 'batch_size', 'max_len', 'dual_seq',
                                'emb_comp']
 
-def get_file(file_path):
-    pass
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--preds_a', type=str, required=True, help='A file to evaluate')
