@@ -73,9 +73,9 @@ def filter_sentences(sentence_dict: dict, desired_length: int, num_sentences: in
 
 
 def main():
-    # TODO bytte hvordan du åpner fila, må gjøres før du publiserer
+    # TODO bytte hvordan du åpner fila
     try:
-        with open('/Users/ingalang/Documents/Malta/Semester2/Thesis/compound_sents_10mai_1233.json', 'r') as infile:
+        with open('/Users/ingalang/Documents/Malta/Semester2/Thesis/compound_sents_18mai.json', 'r') as infile:
             harvested_sentences = json.load(infile)
     except:
         print('Cannot open file')
