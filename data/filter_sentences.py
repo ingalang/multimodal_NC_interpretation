@@ -38,7 +38,7 @@ def print_sentence_stats(sentence_dict: dict, msg='sentence stats'):
     print(f'Number of compounds with no sentences: {_number_of_empty_sentence_lists(sentence_dict)}.\n')
 
 def clean_sentences(sentence_dict: dict) -> dict:
-    url_reg = re.compile(r'http\S+|\[\w*\]|[^\w\s!?:.,\-/]')
+    url_reg = re.compile(r'http\S+|\[\w*\]|[^\w\s!?:.,\-/\']')
     space_reg = re.compile(r'\s+')
     cleaned_sentences = defaultdict(list)
     for compound, sentences in sentence_dict.items():
@@ -75,11 +75,11 @@ def filter_sentences(sentence_dict: dict, desired_length: int, num_sentences: in
 def main():
     # TODO bytte hvordan du åpner fila
     try:
-        with open('/Users/ingalang/Documents/Malta/Semester2/Thesis/compound_sents_18mai.json', 'r') as infile:
+        with open('/Users/ingalang/Documents/Malta/Semester2/thesis_code_new/compound_sents.json', 'r') as infile:
             harvested_sentences = json.load(infile)
     except:
         print('Cannot open file')
-
+        raise FileNotFoundError
     print_sentence_stats(harvested_sentences, msg='sentence stats before filtering')
     cleaned_sents = clean_sentences(harvested_sentences)
     avg_sent_length = _avg_len_per_sentence(sentence_dict=harvested_sentences)
