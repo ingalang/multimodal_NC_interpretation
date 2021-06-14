@@ -41,16 +41,34 @@ def get_synsets(data: pd.DataFrame, constituent='both'):
 
     ### METODE 2: filtrere på ord i queryen og få en df per ord
     filter_query_start = time.time()
-    wordlist_two = ['dog', 'cat', 'carrot', 'squirrel', 'house', 'dolphin', 'cloud', 'umbrella', 'fox', 'rabbit']
+    wordlist_two = ['cat', 'carrot', 'squirrel']
     url_list_two = []
 
-    # TODO: sjekk alle synsetsene og ikke bare det første, da. så er det sikkert større sjanse for at det er noe der :))
     for word in wordlist_two:
-        synsets = wn.synsets(word, pos='n')
-        synset_id = f'n{synsets[0].offset()}'
-        query = f'select * from images_synsets where synset_type=\'n\' and synset_id=\'{synset_id}\''
-        df_two = read_pandas_sql(dolt, query)
-        url_list_two.append(row['image_url'] for i, row in df_two.iterrows())
+        word_query = f'select * from words_synsets where word=\'{word}\' and synset_type=\'n\''
+        df_synsets = read_pandas_sql(dolt, word_query)
+        print(df_synsets.head())
+        synset_ids = [str(row['synset_id']) for i, row in df_synsets.iterrows()]
+        synset_ids = list(map(lambda x: f'0{x}' if len(x)<8 else x, synset_ids))
+        print(synset_ids)
+        print(f'SYNSET IDs FOR {word}: {synset_ids}')
+        first_id = str(synset_ids[0])
+        rest_of_synsets = [str(s) for s in synset_ids[1:]]
+        img_synset_query = f'select * from images_synsets where synset_type=\'n\' and (synset_id=\'{first_id}\''
+        for syns in rest_of_synsets:
+            img_synset_query +=  f' or synset_id=\'{syns}\''
+        img_synset_query += ')'
+        print(img_synset_query)
+        df_image_urls = read_pandas_sql(dolt, img_synset_query)
+        df_image_urls['synset_id'] = list(map(lambda x: f'0{x}' if len(x)<8 else x, df_image_urls['synset_id']))
+        print(f'{word} RESULTS:')
+        print(len(df_image_urls))
+        sucessful_synsets = pd.unique(df_image_urls['synset_id'])
+        print(f'SUCCESSFUL SYNSETS FOR {word}: {sucessful_synsets}')
+        for i, row in df_image_urls.iterrows():
+            url = row['image_url']
+            print(url)
+    print(type(url_list_two))
     print(url_list_two)
     print(len(url_list_two))
     filter_query_end = time.time()
